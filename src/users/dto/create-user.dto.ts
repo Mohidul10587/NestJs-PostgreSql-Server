@@ -3,4 +3,5 @@ export class CreateUserDto {
   email: string;
   password: string; // required
   img?: string; // optional
+  isVerified: boolean = false; // default value
 }

@@ -14,6 +14,7 @@ export class UsersService {
       email: createUserDto.email,
       password: createUserDto.password,
       img: createUserDto.img || null,
+      isVerified: createUserDto.isVerified || false,
     };
     return this.prisma.user.create({ data });
   }
