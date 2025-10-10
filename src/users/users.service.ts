@@ -22,11 +22,15 @@ export class UsersService {
     };
     const user = await this.prisma.user.create({ data });
 
-    const token = jwt.sign({ userId: user.id, phone: user.phone }, JWT_SECRET, {
-      expiresIn: '10d',
-    });
+    const token: string = jwt.sign(
+      { userId: user.id, phone: user.phone },
+      JWT_SECRET,
+      {
+        expiresIn: '10d',
+      },
+    );
 
-    // return both user and token to the controller
+    // return both user and token to the controller ds
     return { user, token };
   }
 
