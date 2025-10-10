@@ -6,18 +6,30 @@ import {
   Patch,
   Param,
   Delete,
+  Res,
 } from '@nestjs/common';
+
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import type { Response } from 'express';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
+    const { user, token } = await this.usersService.create(createUserDto);
+
+    res.cookie('tkn', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none', // important if frontend is on a different domain
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
+    return res.status(201).json({ user });
   }
 
   @Get()
