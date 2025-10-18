@@ -20,17 +20,17 @@ model User {
 }
 
 model Post {
-  id           Int       @id @default(autoincrement())
-  content      String
-  color        String    @db.VarChar(50)
-  type         String    @db.VarChar(20)
-  createdAt    DateTime? @default(now()) @db.Timestamp(6)
-  authorId     Int
-  images       String[]
-  videoUrl     String?
-  updatedAt    DateTime? @default(now()) @db.Timestamp(6)
-  sharedPostId Int?
-  User         User      @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "Post_authorid_fkey")
-  Post         Post?     @relation("PostToPost", fields: [sharedPostId], references: [id], onUpdate: NoAction)
-  other_Post   Post[]    @relation("PostToPost")
+  id         Int       @id @default(autoincrement())
+  text       String
+  color      String    @db.VarChar(50)
+  type       String    @db.VarChar(20)
+  createdAt  DateTime? @default(now()) @db.Timestamp(6)
+  author     Int
+  img        String[]
+  video      String?
+  updatedAt  DateTime? @default(now()) @db.Timestamp(6)
+  sharedPost Int?
+  User       User      @relation(fields: [author], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "Post_authorUser_fkey")
+  Post       Post?     @relation("PostToPost", fields: [sharedPost], references: [id], onUpdate: NoAction)
+  other_Post Post[]    @relation("PostToPost")
 }

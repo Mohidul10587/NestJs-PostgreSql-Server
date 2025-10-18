@@ -8,18 +8,54 @@ export class PostsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createPostDto: CreatePostDto) {
-    const { content, color, type, authorId, images, videoUrl } = createPostDto;
+    const { text, color, type, author, img, video, sharedPost } = createPostDto;
     const data = {
-      content: content ?? '',
+      text: text ?? '',
       color: color ?? '',
       type,
-      authorId,
-      images: images ?? [],
-      videoUrl: videoUrl ?? null,
+      author,
+      img: img ?? [],
+      video: video ?? null,
+      sharedPost: sharedPost ?? null,
     };
     const post = await this.prisma.post.create({ data });
     // return both post and token to the controller ds
     return { post };
+  }
+  async getBusinessFeedPosts(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [newsFeed, total] = await Promise.all([
+      this.prisma.post.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          User: true,
+          Post: {
+            include: {
+              User: true,
+            },
+          },
+        },
+      }),
+      this.prisma.post.count(),
+    ]);
+
+    // Add extra property feedType to each post
+    const modifiedNewsFeed = newsFeed.map((post) => ({
+      ...post,
+      feedType: 'normalPost',
+    }));
+
+    return {
+      total,
+      page,
+      limit,
+      newsFeed: modifiedNewsFeed,
+    };
   }
 
   findAll() {

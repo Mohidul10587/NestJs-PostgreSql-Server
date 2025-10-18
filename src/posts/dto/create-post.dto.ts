@@ -1,8 +1,9 @@
 export class CreatePostDto {
-  content?: string;
+  text?: string;
   color?: string;
   type: string; // "text" | "image" | "video"
-  authorId: number; // link to User.id
-  images?: string[];
-  videoUrl?: string;
+  author: number; // link to User.id
+  img?: string[];
+  video?: string;
+  sharedPost?: number; // link to Post.id
 }
