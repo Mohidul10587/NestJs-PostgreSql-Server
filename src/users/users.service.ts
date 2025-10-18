@@ -1,10 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { Response } from 'express';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
+// Define a type without password
+
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -17,7 +26,7 @@ export class UsersService {
       name: createUserDto.name,
       phone: createUserDto.phone,
       password: hashedPassword,
-      img: createUserDto.img || null,
+      image: createUserDto.image || null,
       isVerified: createUserDto.isVerified || false,
     };
     const user = await this.prisma.user.create({ data });
@@ -33,7 +42,94 @@ export class UsersService {
     // return both user and token to the controller ds
     return { user, token };
   }
+  // 🆕 For existing user: only generate token
+  async setRefreshToken(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: Number(id) },
+    });
 
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const token = jwt.sign({ userId: user.id, phone: user.phone }, JWT_SECRET, {
+      expiresIn: '10d',
+    });
+
+    return { user, token };
+  }
+  async logIn(phone: string, password: string) {
+    if (!phone || !password) {
+      throw new BadRequestException('Phone & password are required');
+    }
+    console.log(phone, password);
+    try {
+      // Find all users with the given phone
+      const users = await this.prisma.user.findMany({
+        where: { phone },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          password: true,
+          image: true,
+          createdAt: true, // Assuming Prisma model has createdAt
+        },
+      });
+
+      if (!users.length) {
+        throw new NotFoundException('User not found');
+      }
+      console.log(users);
+      // Filter users with matching password
+      const matchedUsers: {
+        id: number;
+        name: string;
+        phone: string;
+        image: string | null;
+        password: string;
+        createdAt: Date;
+      }[] = [];
+      for (const u of users) {
+        const isMatch = await bcrypt.compare(password, u.password);
+        if (isMatch) {
+          matchedUsers.push(u);
+        }
+      }
+
+      if (!matchedUsers.length) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      // Pick the last registered user (based on createdAt)
+      const lastRegisteredUser = matchedUsers.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+      )[0];
+
+      // Safe user object (no password)
+      const safeUser = {
+        id: lastRegisteredUser.id,
+        name: lastRegisteredUser.name,
+        phone: lastRegisteredUser.phone,
+        image: lastRegisteredUser.image,
+      };
+
+      return { user: safeUser, message: 'Login successful' };
+    } catch (err) {
+      console.error('Login error:', err);
+      throw new InternalServerErrorException('Failed to log in');
+    }
+  }
+
+  logout(res: Response) {
+    res.clearCookie('refreshToken', {
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+    });
+    return { message: 'Logged out successfully' };
+  }
   findAll() {
     return this.prisma.user.findMany();
   }

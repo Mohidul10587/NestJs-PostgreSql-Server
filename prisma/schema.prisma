@@ -11,7 +11,7 @@ model User {
   id         Int      @id @default(autoincrement())
   name       String   @db.VarChar(255)
   createdAt  DateTime @default(now())
-  img        String?  @db.VarChar(500)
+  image      String?  @db.VarChar(500)
   password   String   @db.VarChar(255)
   updatedAt  DateTime @updatedAt
   isVerified Boolean  @default(false)
