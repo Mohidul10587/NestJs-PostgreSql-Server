@@ -11,6 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { Response } from 'express';
+import slugify from 'slugify';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 // Define a type without password
 
@@ -19,27 +20,37 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
-    // Generate a salt and hash the password
+    // Hash password
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
+    // Generate base slug
+    const baseSlug = slugify(createUserDto.name, { lower: true, strict: true });
+    let userSlug = baseSlug;
+    let count = 1;
+
+    // Ensure uniqueness
+    while (await this.prisma.user.findUnique({ where: { userSlug } })) {
+      userSlug = `${baseSlug}-${count++}`;
+    }
+
+    // Prepare user data
     const data = {
       name: createUserDto.name,
       phone: createUserDto.phone,
       password: hashedPassword,
       image: createUserDto.image || null,
       isVerified: createUserDto.isVerified || false,
+      userSlug: userSlug,
     };
+
+    // Create user
     const user = await this.prisma.user.create({ data });
 
-    const token: string = jwt.sign(
-      { userId: user.id, phone: user.phone },
-      JWT_SECRET,
-      {
-        expiresIn: '10d',
-      },
-    );
+    // Generate JWT token
+    const token = jwt.sign({ userId: user.id, phone: user.phone }, JWT_SECRET, {
+      expiresIn: '10d',
+    });
 
-    // return both user and token to the controller ds
     return { user, token };
   }
   // 🆕 For existing user: only generate token

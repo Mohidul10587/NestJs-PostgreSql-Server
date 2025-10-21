@@ -8,14 +8,16 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(255)
-  createdAt  DateTime @default(now())
-  image      String?  @db.VarChar(500)
-  password   String   @db.VarChar(255)
-  updatedAt  DateTime @updatedAt
-  isVerified Boolean  @default(false)
-  phone      String   @db.VarChar(20)
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  createdAt  DateTime  @default(now())
+  image      String?   @db.VarChar(500)
+  password   String    @db.VarChar(255)
+  updatedAt  DateTime  @updatedAt
+  isVerified Boolean   @default(false)
+  phone      String    @db.VarChar(20)
+  userSlug   String?   @unique(map: "user_slug_unique") @db.VarChar(255)
+  Comment    Comment[]
   Post       Post[]
 }
 
@@ -30,7 +32,19 @@ model Post {
   video      String?
   updatedAt  DateTime? @default(now()) @db.Timestamp(6)
   sharedPost Int?
+  Comment    Comment[]
   User       User      @relation(fields: [author], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "Post_authorUser_fkey")
   Post       Post?     @relation("PostToPost", fields: [sharedPost], references: [id], onUpdate: NoAction)
   other_Post Post[]    @relation("PostToPost")
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  text      String
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @db.Timestamp(6)
+  authorId  Int
+  postId    Int
+  User      User      @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_author")
+  Post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_post")
 }

@@ -25,36 +25,32 @@ export class PostsService {
   async getBusinessFeedPosts(page: number, limit: number) {
     const skip = (page - 1) * limit;
 
-    const [newsFeed, total] = await Promise.all([
+    const [posts, total] = await Promise.all([
       this.prisma.post.findMany({
         skip,
         take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: { createdAt: 'desc' },
         include: {
-          User: true,
-          Post: {
-            include: {
-              User: true,
-            },
-          },
+          User: true, // author info
+          Post: { include: { User: true } }, // shared post info
+          _count: { select: { Comment: true } }, // total comments for each post
         },
       }),
       this.prisma.post.count(),
     ]);
 
-    // Add extra property feedType to each post
-    const modifiedNewsFeed = newsFeed.map((post) => ({
+    const newsFeed = posts.map((post) => ({
       ...post,
       feedType: 'normalPost',
+      totalComments: post._count.Comment,
+      _count: undefined, // optional: remove _count
     }));
 
     return {
       total,
       page,
       limit,
-      newsFeed: modifiedNewsFeed,
+      newsFeed,
     };
   }
 
