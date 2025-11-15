@@ -19,7 +19,7 @@ export class AppService {
             },
             {
               method: 'POST',
-              path: '/users',
+              path: '/users/signUp',
               description: 'Create a new user',
             },
             {

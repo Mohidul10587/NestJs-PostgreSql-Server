@@ -9,19 +9,28 @@ export class PostsService {
 
   async create(createPostDto: CreatePostDto) {
     const { text, color, type, author, img, video, sharedPost } = createPostDto;
+
     const data = {
-      text: text ?? '',
-      color: color ?? '',
+      text,
+      color,
       type,
-      author,
       img: img ?? [],
       video: video ?? null,
-      sharedPost: sharedPost ?? null,
+
+      // Prisma relation: User
+      User: {
+        connect: { id: author },
+      },
+
+      // Prisma relation: Post (shared post)
+      Post: sharedPost ? { connect: { id: sharedPost } } : undefined,
     };
+
     const post = await this.prisma.post.create({ data });
-    // return both post and token to the controller ds
+
     return { post };
   }
+
   async getBusinessFeedPosts(page: number, limit: number) {
     const skip = (page - 1) * limit;
 
