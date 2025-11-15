@@ -50,7 +50,7 @@ export class AppController {
               <p class="text-gray-800 font-medium">GET /users/:id</p>
               <p class="text-gray-600 text-sm">Get a single user by ID</p>
               <a
-                href="#"
+                href="https://nestjs-postgresql-server-1.onrender.com/users/1"
                 class="inline-block mt-1 text-blue-500 text-sm hover:underline"
                 >🔗 Open</a
               >
@@ -59,7 +59,7 @@ export class AppController {
             <div
               class="border-l-4 border border-blue-500 pl-3 py-2 bg-blue-50 rounded-md"
             >
-              <p class="text-gray-800 font-medium">POST /users</p>
+              <p class="text-gray-800 font-medium">POST /users/singUp</p>
               <p class="text-gray-600 text-sm">Create a new user</p>
               <a
                 href="#"
@@ -133,7 +133,7 @@ export class AppController {
               <p class="text-gray-800 font-medium">GET /posts/:id</p>
               <p class="text-gray-600 text-sm">Get a single post by ID</p>
               <a
-                href="#"
+                href="https://nestjs-postgresql-server-1.onrender.com/posts/1"
                 class="inline-block mt-1 text-blue-500 text-sm hover:underline"
                 >🔗 Open</a
               >
