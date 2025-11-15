@@ -51,6 +51,7 @@ export class AppController {
               <p class="text-gray-600 text-sm">Get a single user by ID</p>
               <a
                 href="https://nestjs-postgresql-server-1.onrender.com/users/1"
+                target="_blank"
                 class="inline-block mt-1 text-blue-500 text-sm hover:underline"
                 >🔗 Open</a
               >
@@ -134,6 +135,7 @@ export class AppController {
               <p class="text-gray-600 text-sm">Get a single post by ID</p>
               <a
                 href="https://nestjs-postgresql-server-1.onrender.com/posts/1"
+                target="_blank"
                 class="inline-block mt-1 text-blue-500 text-sm hover:underline"
                 >🔗 Open</a
               >
